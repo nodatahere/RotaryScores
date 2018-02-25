@@ -84,8 +84,8 @@ public class RotaryScores {
 		return essays;
 	}
 	
-	private static String formatResults(int[][] essays) {
-		String results = "";
+	private static String[] formatResults(int[][] essays) {//yes, this really should be two separate methods for figuring the final rankings/other data values and converting it into a string array, i'll get to it eventually
+		String[] results= new String[(config[2]+7)];//array of strings representing each line of the output file
 		Arrays.sort(essays, new Comparator<int[]>() {
 	           
 	          @Override             
@@ -95,8 +95,26 @@ public class RotaryScores {
 	                return 1;
 	            else
 	                return -1;
-	          }
-	        });
+	          }});
+		
+		results[0]="Read " + config[0] + " Judge file(s)";//message for judge file count
+		results[2]="Placements:";//skip a line and add the placement header
+		for(int x = 0; x < config[2]; x++) {//iterate through the placements, dynamically generate the 1st/2nd/3rd, etc
+			results[3+x]=""+x;
+			if(x==1)
+				results[3+x].concat("st::");
+			else if(x<3)
+				results[3+x].concat("nd::");
+			else if(x==3)
+				results[3+x].concat("rd::");
+			else
+				results[3+x].concat("th::");//yes, I know that this won't get large placements quite right, but if you're seriously using this for 20+ essays and it bothers you, email me and let me know that the edge case happened
+			if(essays[x][6]<10)//append the ID of the relevant essay, with a leading zero if it's a single digit value
+				results[3+x].concat("0"+essays[x][6]); 
+			else
+				results[3+x].concat(""+essays[x][6]);
+		}
+		
 		return results;
 	}
 	
@@ -112,7 +130,8 @@ public class RotaryScores {
 			essays = scoreRanks(judge, essays);//update the essay data to reflect the scores from the ballot read by calling readBallot
 		}
 		
-		System.out.println(formatResults(essays));
+		for(String line : formatResults(essays))
+			System.out.println(line);
 	}
 
 }
