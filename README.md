@@ -38,3 +38,15 @@ The placement counts were not referenced, so a manual runoff is not needed.
 ```
 
 Ranking process: Each essay will be given a score based on the placement assigned it by each judge. The scores are then totaled, and used for a preliminary ranking, with a higher score being a better rank. In the event of a tie, the number of times each essay was placed in a given location is counted, and the ties are broken on that basis. In the event of a tie after weighting each based on their placement counts, a manual runoff is called for in the output file, and any judges who ranked the essays which are being manually considered in the place for which they are contending will be highlighted for removal from the pool.
+
+
+As this code directly approaches a situation involving money, I'm releasing it under [the Gnu Public License V2.0](https://www.gnu.org/licenses/gpl-2.0.html#SEC3), with the standard GPL disclaimer that:
+
+```
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+```
+
+Please direct any questions about this program to [error.404.no.data.here@gmail.com](mailto:error.404.no.data.here@gmail.com)
