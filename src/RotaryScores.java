@@ -1,7 +1,7 @@
 /*
 Written by no_data_here <error.404.no.data.here@gmail.com> on 02/25/2018 
-Last edited on 02/25/2018.
-Status as of 02/25/2018: INCOMPLETE
+Last edited on 02/26/2018.
+Status as of 02/26/2018: INCOMPLETE
 
 Copyright (C) 2018 no_data_here
 
@@ -27,6 +27,7 @@ import java.util.Comparator;
 public class RotaryScores {
 	
 	static int[] config= {0,0,0};//array for holding number of judges, essays, and places
+	static int[] tiebreakerPlaces;//if this is 1, there was a tie that had to be broken by the number of rankings, if it's 2, a manual runoff is needed, 3: both kinds
 	
 	private static void getConfig(Scanner input) {//read Config.txt for config values
 		//temporary input from stdin to collect the config values
@@ -36,6 +37,7 @@ public class RotaryScores {
 		config[1]=input.nextInt();
 		System.out.print("Input the number of places to award: ");
 		config[2]=input.nextInt();
+		tiebreakerPlaces = new int[config[2]];//set tiebreakerPlaces to size for checking if a given place needed a tiebreaker
 	}
 	
 	private static int[] readBallot(Scanner input) {//read a given ballot for the scores given by the judges
@@ -84,19 +86,58 @@ public class RotaryScores {
 		return essays;
 	}
 	
-	private static String[] formatResults(int[][] essays) {//yes, this really should be two separate methods for figuring the final rankings/other data values and converting it into a string array, i'll get to it eventually
-		String[] results= new String[(config[2]+7)];//array of strings representing each line of the output file
-		Arrays.sort(essays, new Comparator<int[]>() {
+	private static int[][] sortByCol(int col, int [][] arr, int start, int end){//sort sub-array of array 'arr' by column 'col'
+		Arrays.sort(arr, new Comparator<int[]>() {
 	           
 	          @Override             
 	          // Compare values according to column containing score
 	          public int compare(final int[] entry1, final int[] entry2) {
-	            if (entry1[0] < entry2[0])
+	            if (entry1[col] < entry2[col])
 	                return 1;
 	            else
 	                return -1;
 	          }});
 		
+		return arr;
+	}
+	
+	private static int[][] sortByCol(int col, int[][] arr){//overload sortByCol for defaulting to full array
+		return sortByCol(col, arr, 0, (arr.length-1));
+	}
+	
+	private static int[][] sortByCol(int[][] arr){//overload sortbyCol to default to first column
+		return sortByCol(0, arr);
+	}
+	
+	private static int[][] swapEssays(int[][] essays, int first, int second){//swaps two essays in essays array
+		int[] temp = essays[first];//set aside first essay for swap
+		essays[first]=essays[second];
+		essays[second]=temp;
+		return essays;
+	}
+	
+	private static int[][] orderEssays(int[][] essays){//damn multilayered sort giving me a headache, will come back later
+		essays=sortByCol(essays);//sort by scores
+		for(int x = 0; x < (config[2]-1); x++) {//iterate through for all places and compare for tied scores for first round of tiebreaking
+			if(essays[x][0]==essays[x+1][0]) {//if current iteration is tied with one ranked below it currently based on cumulative score
+				essays=sortByCol(x, essays, x, x+1);//call sortByCol to sort tied pair by
+				tiebreakerPlaces[x]++;//tag each place in tiebreaker as having had a tie broken
+				tiebreakerPlaces[x+1]++;
+			}
+		}
+		for(int x = 0; x < (config[2]-1); x++) {//iterate through for all places and compare for tied placements for second round of tiebreaking
+			if(essays[x][0]==essays[x+1][0]) {//if current iteration is tied with one ranked below it currently based on number of placements in highest spot
+				essays=sortByCol(x, essays, x, x+1);//call sortByCol to sort tied pair by
+				tiebreakerPlaces[x]++;//tag each place in tiebreaker as having had a tie broken
+				tiebreakerPlaces[x+1]++;
+			}
+		}
+		return essays;
+	}
+	
+	private static String[] formatResults(int[][] essays) {
+		String[] results= new String[(config[2]+7)];//array of strings representing each line of the output file
+		essays=orderEssays(essays);//run essay sorting logic
 		results[0]="Read " + config[0] + " Judge file(s)";//message for judge file count
 		results[2]="Placements:";//skip a line and add the placement header
 		for(int x = 0; x < config[2]; x++) {//iterate through the placements, dynamically generate the 1st/2nd/3rd, etc
